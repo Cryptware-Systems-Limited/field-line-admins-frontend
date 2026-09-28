@@ -5,6 +5,7 @@ import {
   Building2,
   Check,
   ChevronRight,
+  Clipboard,
   Eye,
   EyeOff,
   LayoutDashboard,
@@ -20,7 +21,14 @@ import {
 } from 'lucide-react';
 
 import { api, ApiError } from './api';
-import type { AdminUser, CreateStationInput, Station } from './types';
+import type {
+  AdminUser,
+  AppointStationAdminInput,
+  AppointmentResponse,
+  CreateStationInput,
+  Station,
+  StationAdmin,
+} from './types';
 
 type Notice = { kind: 'success' | 'error'; message: string } | null;
 
@@ -67,9 +75,12 @@ function Login({ onLogin }: { onLogin: (token: string, user: AdminUser) => void 
     setLoading(true);
     try {
       const result = await api.login(email.trim(), password);
-      if (!result.user.roles.includes('PLATFORM_ADMIN')) {
+      if (
+        !result.user.roles.includes('PLATFORM_ADMIN') &&
+        !result.user.roles.includes('STATION_ADMIN')
+      ) {
         await api.logout().catch(() => undefined);
-        setError('This portal is restricted to Platform Administrators.');
+        setError('This portal is restricted to authorised administrators.');
         return;
       }
       onLogin(result.accessToken, result.user);
@@ -160,12 +171,13 @@ function StatusBadge({ status }: { status: Station['status'] }) {
   return <span className={`status status--${status.toLowerCase()}`}><i />{status.replace('_', ' ')}</span>;
 }
 
-function Dashboard({ token, user, onLogout }: { token: string; user: AdminUser; onLogout: () => void }) {
+function PlatformDashboard({ token, user, onLogout }: { token: string; user: AdminUser; onLogout: () => void }) {
   const [stations, setStations] = useState<Station[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [modal, setModal] = useState<'create' | null>(null);
   const [selected, setSelected] = useState<Station | null>(null);
+  const [adminStation, setAdminStation] = useState<Station | null>(null);
   const [notice, setNotice] = useState<Notice>(null);
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -246,7 +258,8 @@ function Dashboard({ token, user, onLogout }: { token: string; user: AdminUser; 
         </section>
       </main>
       {modal === 'create' && <CreateStationModal token={token} onClose={() => setModal(null)} onCreated={(station) => { setStations((items) => [station, ...items]); setModal(null); setSelected(station); setNotice({ kind: 'success', message: `${station.name} was created as a draft.` }); }} />}
-      {selected && <StationDrawer station={selected} onClose={() => setSelected(null)} onApprove={approve} />}
+      {selected && <StationDrawer token={token} station={selected} onClose={() => setSelected(null)} onApprove={approve} onAppoint={() => setAdminStation(selected)} />}
+      {adminStation && <AppointAdminModal token={token} station={adminStation} onClose={() => setAdminStation(null)} onAppointed={() => setNotice({ kind: 'success', message: `A Station Admin was appointed to ${adminStation.name}.` })} />}
     </div>
   );
 }
@@ -277,10 +290,76 @@ function CreateStationModal({ token, onClose, onCreated }: { token: string; onCl
   return <div className="modal-backdrop"><section className="modal"><header><button className="back-button" onClick={onClose}><ArrowLeft size={19} /></button><div><span className="eyebrow">Station onboarding</span><h2>Add a police station</h2></div><button className="icon-button" onClick={onClose}><X /></button></header><form onSubmit={submit}>{error && <div className="alert alert--error">{error}</div>}<div className="form-section"><h3>Station identity</h3><div className="form-grid"><label>Station code<input value={form.code} onChange={(event) => update('code', event.target.value.toUpperCase())} placeholder="e.g. LA-IKJ-001" pattern="[A-Z0-9-]{3,30}" required /></label><label>Station name<input value={form.name} onChange={(event) => update('name', event.target.value)} placeholder="e.g. Ikeja Police Station" required /></label><label>Station type<input value={form.type || ''} onChange={(event) => update('type', event.target.value)} placeholder="Divisional Headquarters" /></label><label>Police command<input value={form.command || ''} onChange={(event) => update('command', event.target.value)} placeholder="Lagos State Police Command" /></label></div></div><div className="form-section"><h3>Location</h3><div className="form-grid"><label className="span-2">Address line 1<input value={form.addressLine1} onChange={(event) => update('addressLine1', event.target.value)} placeholder="Street and building" required /></label><label>City<input value={form.city} onChange={(event) => update('city', event.target.value)} placeholder="Ikeja" required /></label><label>State<input value={form.state} onChange={(event) => update('state', event.target.value)} required /></label></div></div><div className="form-section"><h3>Contact information</h3><div className="form-grid"><label>Official phone<input value={form.phone || ''} onChange={(event) => update('phone', event.target.value)} placeholder="+234…" /></label><label>Official email<input type="email" value={form.email || ''} onChange={(event) => update('email', event.target.value)} placeholder="station@example.com" /></label></div></div><footer><button type="button" className="button button--ghost" onClick={onClose}>Cancel</button><button className="button button--primary" disabled={loading}>{loading ? <LoaderCircle className="spin" size={18} /> : <Plus size={18} />} Create draft station</button></footer></form></section></div>;
 }
 
-function StationDrawer({ station, onClose, onApprove }: { station: Station; onClose: () => void; onApprove: (station: Station) => Promise<void> }) {
+function StationDrawer({ token, station, onClose, onApprove, onAppoint }: { token: string; station: Station; onClose: () => void; onApprove: (station: Station) => Promise<void>; onAppoint: () => void }) {
   const [approving, setApproving] = useState(false);
+  const [admins, setAdmins] = useState<StationAdmin[]>([]);
+  useEffect(() => {
+    if (station.status === 'ACTIVE') void api.listStationAdmins(token, station.id).then(setAdmins).catch(() => undefined);
+  }, [station.id, station.status, token]);
   async function approve() { setApproving(true); await onApprove(station); setApproving(false); }
-  return <><button className="drawer-backdrop" onClick={onClose} aria-label="Close details" /><aside className="drawer"><header><div className="station-symbol station-symbol--large"><Building2 /></div><button className="icon-button" onClick={onClose}><X /></button></header><span className="eyebrow">{station.code}</span><h2>{station.name}</h2><StatusBadge status={station.status} /><div className="detail-section"><h3>Station details</h3><dl><div><dt>Type</dt><dd>{station.type || 'Not specified'}</dd></div><div><dt>Command</dt><dd>{station.command || 'Not specified'}</dd></div><div><dt>Location</dt><dd><MapPin size={15} /> {station.addressLine1}, {station.city}, {station.state}</dd></div><div><dt>Phone</dt><dd>{station.phone || 'Not specified'}</dd></div><div><dt>Email</dt><dd>{station.email || 'Not specified'}</dd></div></dl></div><div className="detail-section"><h3>Record</h3><dl><div><dt>Created</dt><dd>{new Intl.DateTimeFormat('en-NG', { dateStyle: 'medium' }).format(new Date(station.createdAt))}</dd></div><div><dt>Station ID</dt><dd className="mono">{station.id}</dd></div></dl></div>{station.status === 'DRAFT' || station.status === 'PENDING_APPROVAL' ? <div className="drawer-actions"><p>Confirm that these details are correct before activating this station.</p><button className="button button--primary button--wide" onClick={approve} disabled={approving}>{approving ? <LoaderCircle className="spin" size={18} /> : <ShieldCheck size={18} />} Approve and activate</button></div> : <div className="active-callout"><Check size={18} /><div><strong>Station is operational</strong><p>This station can now receive an assigned administrator.</p></div></div>}</aside></>;
+  return <><button className="drawer-backdrop" onClick={onClose} aria-label="Close details" /><aside className="drawer"><header><div className="station-symbol station-symbol--large"><Building2 /></div><button className="icon-button" onClick={onClose}><X /></button></header><span className="eyebrow">{station.code}</span><h2>{station.name}</h2><StatusBadge status={station.status} /><div className="detail-section"><h3>Station details</h3><dl><div><dt>Type</dt><dd>{station.type || 'Not specified'}</dd></div><div><dt>Command</dt><dd>{station.command || 'Not specified'}</dd></div><div><dt>Location</dt><dd><MapPin size={15} /> {station.addressLine1}, {station.city}, {station.state}</dd></div><div><dt>Phone</dt><dd>{station.phone || 'Not specified'}</dd></div><div><dt>Email</dt><dd>{station.email || 'Not specified'}</dd></div></dl></div><div className="detail-section"><h3>Station administrators</h3>{admins.length ? <div className="admin-list">{admins.map((admin) => <div key={admin.id}><span className="avatar">{admin.personnelProfile.firstName[0]}</span><span><strong>{admin.personnelProfile.firstName} {admin.personnelProfile.lastName}</strong><small>{admin.email}</small></span></div>)}</div> : <p className="muted small-copy">No Station Admin has been appointed.</p>}{station.status === 'ACTIVE' && <button className="button button--secondary button--wide" onClick={onAppoint}><Plus size={17} /> Appoint Station Admin</button>}</div><div className="detail-section"><h3>Record</h3><dl><div><dt>Created</dt><dd>{new Intl.DateTimeFormat('en-NG', { dateStyle: 'medium' }).format(new Date(station.createdAt))}</dd></div><div><dt>Station ID</dt><dd className="mono">{station.id}</dd></div></dl></div>{station.status === 'DRAFT' || station.status === 'PENDING_APPROVAL' ? <div className="drawer-actions"><p>Confirm that these details are correct before activating this station.</p><button className="button button--primary button--wide" onClick={approve} disabled={approving}>{approving ? <LoaderCircle className="spin" size={18} /> : <ShieldCheck size={18} />} Approve and activate</button></div> : <div className="active-callout"><Check size={18} /><div><strong>Station is operational</strong><p>Station Administrators can now be appointed.</p></div></div>}</aside></>;
+}
+
+const blankAdmin: AppointStationAdminInput = {
+  email: '',
+  phone: '',
+  personnelType: 'POLICE_OFFICER',
+  personnelNumber: '',
+  firstName: '',
+  middleName: '',
+  lastName: '',
+  position: '',
+  department: '',
+  authorisationRef: '',
+};
+
+function AppointAdminModal({ token, station, onClose, onAppointed }: { token: string; station: Station; onClose: () => void; onAppointed: () => void }) {
+  const [form, setForm] = useState<AppointStationAdminInput>(blankAdmin);
+  const [result, setResult] = useState<AppointmentResponse | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  function update<K extends keyof AppointStationAdminInput>(key: K, value: AppointStationAdminInput[K]) {
+    setForm((current) => ({ ...current, [key]: value }));
+  }
+
+  async function submit(event: FormEvent) {
+    event.preventDefault();
+    setLoading(true);
+    setError('');
+    try {
+      const payload = Object.fromEntries(Object.entries(form).filter(([, value]) => value !== '')) as unknown as AppointStationAdminInput;
+      const appointment = await api.appointStationAdmin(token, station.id, payload);
+      setResult(appointment);
+      onAppointed();
+    } catch (requestError) {
+      setError(getError(requestError));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (result) {
+    return <div className="modal-backdrop"><section className="modal credential-modal"><div className="credential-success"><span className="round-icon"><Check /></span><span className="eyebrow">Appointment complete</span><h2>Station Admin created</h2><p>{result.admin.personnelProfile.firstName} {result.admin.personnelProfile.lastName} can now sign in to the Field-Line administration portal.</p><div className="credential-box"><small>Email</small><strong>{result.admin.email}</strong><small>One-time temporary password</small><code>{result.temporaryPassword}</code><button className="button button--secondary" onClick={() => void navigator.clipboard.writeText(result.temporaryPassword)}><Clipboard size={17} /> Copy password</button></div><div className="alert alert--warning">This password is shown only once. Share it through an approved secure channel. The administrator must change it at first login.</div><button className="button button--primary button--wide" onClick={onClose}>Done</button></div></section></div>;
+  }
+
+  return <div className="modal-backdrop"><section className="modal"><header><button className="back-button" onClick={onClose}><ArrowLeft size={19} /></button><div><span className="eyebrow">{station.code}</span><h2>Appoint Station Admin</h2></div><button className="icon-button" onClick={onClose}><X /></button></header><form onSubmit={submit}>{error && <div className="alert alert--error">{error}</div>}<div className="form-section"><h3>Personnel information</h3><div className="form-grid"><label>First name<input value={form.firstName} onChange={(event) => update('firstName', event.target.value)} required /></label><label>Last name<input value={form.lastName} onChange={(event) => update('lastName', event.target.value)} required /></label><label>Personnel type<select value={form.personnelType} onChange={(event) => update('personnelType', event.target.value as AppointStationAdminInput['personnelType'])}><option value="POLICE_OFFICER">Police Officer</option><option value="POLICE_STAFF">Police Staff</option></select></label><label>Service / personnel number<input value={form.personnelNumber} onChange={(event) => update('personnelNumber', event.target.value.toUpperCase())} placeholder="NPF-284517" required /></label><label>Rank or position<input value={form.position || ''} onChange={(event) => update('position', event.target.value)} placeholder="Divisional Administrative Officer" /></label><label>Department<input value={form.department || ''} onChange={(event) => update('department', event.target.value)} placeholder="Administration" /></label></div></div><div className="form-section"><h3>Account and authorisation</h3><div className="form-grid"><label>Official email<input type="email" value={form.email} onChange={(event) => update('email', event.target.value)} required /></label><label>Official phone<input value={form.phone} onChange={(event) => update('phone', event.target.value)} placeholder="+234…" pattern="\+?[0-9]{10,15}" required /></label><label className="span-2">Appointment authorisation reference<input value={form.authorisationRef} onChange={(event) => update('authorisationRef', event.target.value)} placeholder="Official approval or appointment reference" required /></label></div></div><footer><button type="button" className="button button--ghost" onClick={onClose}>Cancel</button><button className="button button--primary" disabled={loading}>{loading ? <LoaderCircle className="spin" size={18} /> : <ShieldCheck size={18} />} Create Station Admin</button></footer></form></section></div>;
+}
+
+function StationAdminDashboard({ token, user, onLogout }: { token: string; user: AdminUser; onLogout: () => void }) {
+  const [station, setStation] = useState<Station | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const displayName = user.personnelProfile?.firstName || user.email.split('@')[0];
+
+  useEffect(() => {
+    void api.getAssignedStation(token)
+      .then((result) => setStation(result.station))
+      .catch((requestError) => setError(getError(requestError)))
+      .finally(() => setLoading(false));
+  }, [token]);
+
+  return <div className="app-shell"><aside className="sidebar sidebar--fixed"><Brand compact /><nav><span className="nav-label">My station</span><a className="active"><LayoutDashboard size={19} /> Overview</a><a className="disabled"><UsersRound size={19} /> Officers <small>Soon</small></a><span className="nav-label">System</span><a className="disabled"><Activity size={19} /> Station activity <small>Soon</small></a></nav><button className="sidebar-user" onClick={onLogout}><span className="avatar">{displayName[0].toUpperCase()}</span><span><strong>{displayName}</strong><small>Station Admin</small></span><LogOut size={17} /></button></aside><main className="dashboard"><header className="topbar"><div><span className="eyebrow">Station administration</span><h1>Welcome, {displayName}</h1></div></header>{loading ? <section className="content-card"><div className="empty-state"><LoaderCircle className="spin" /><h3>Loading your station</h3></div></section> : error ? <div className="alert alert--error">{error}</div> : station && <><section className="station-hero"><div className="station-symbol station-symbol--large"><Building2 /></div><div><span className="eyebrow">{station.code}</span><h2>{station.name}</h2><p><MapPin size={15} /> {station.addressLine1}, {station.city}, {station.state}</p></div><StatusBadge status={station.status} /></section><section className="stats-grid"><article><span className="metric-icon metric-icon--blue"><Building2 /></span><div><small>Assigned station</small><strong>1</strong><em>Your access is station-scoped</em></div></article><article><span className="metric-icon metric-icon--green"><ShieldCheck /></span><div><small>Station status</small><strong className="text-status">{station.status}</strong><em>Managed by central command</em></div></article><article><span className="metric-icon metric-icon--amber"><UsersRound /></span><div><small>Officer management</small><strong className="text-status">Next</strong><em>Officer onboarding is coming next</em></div></article></section><section className="content-card"><div className="card-heading"><div><h2>Station administration</h2><p>Your account is working and restricted to {station.name}.</p></div></div><div className="coming-grid"><article><UsersRound /><h3>Officer management</h3><p>Onboard and manage officers assigned to your station.</p><span>Coming next</span></article><article><Activity /><h3>Station activity</h3><p>Review operational events and station audit history.</p><span>Planned</span></article></div></section></>}</main></div>;
 }
 
 export default function App() {
@@ -292,5 +371,8 @@ export default function App() {
 
   if (!token || !user) return <Login onLogin={loggedIn} />;
   if (user.mustChangePassword) return <ChangePassword token={token} user={user} onDone={setUser} />;
-  return <Dashboard token={token} user={user} onLogout={() => void logout()} />;
+  if (user.roles.includes('PLATFORM_ADMIN')) {
+    return <PlatformDashboard token={token} user={user} onLogout={() => void logout()} />;
+  }
+  return <StationAdminDashboard token={token} user={user} onLogout={() => void logout()} />;
 }

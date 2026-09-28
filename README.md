@@ -7,6 +7,8 @@ Web administration portal for the Field-Line policing platform. This first relea
 - view and search registered police stations;
 - create draft stations;
 - review and approve stations.
+- appoint Station Admins and securely issue one-time temporary passwords;
+- give Station Admins a restricted view of only their assigned station.
 
 ## Local development
 

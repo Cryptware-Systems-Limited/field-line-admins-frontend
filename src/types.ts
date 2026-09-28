@@ -44,3 +44,45 @@ export type StationListResponse = {
   items: Station[];
   pagination: { page: number; limit: number; total: number; pages: number };
 };
+
+export type StationAdmin = {
+  id: string;
+  email: string;
+  phone: string;
+  status: string;
+  mustChangePassword: boolean;
+  createdAt: string;
+  personnelProfile: {
+    personnelType: 'POLICE_OFFICER' | 'POLICE_STAFF';
+    personnelNumber: string;
+    firstName: string;
+    middleName?: string | null;
+    lastName: string;
+    rankOrPosition?: string | null;
+    department?: string | null;
+    authorisationRef: string;
+  };
+};
+
+export type AppointStationAdminInput = {
+  email: string;
+  phone: string;
+  personnelType: 'POLICE_OFFICER' | 'POLICE_STAFF';
+  personnelNumber: string;
+  firstName: string;
+  middleName?: string;
+  lastName: string;
+  position?: string;
+  department?: string;
+  authorisationRef: string;
+};
+
+export type AppointmentResponse = {
+  admin: StationAdmin;
+  temporaryPassword: string;
+};
+
+export type AssignedStationResponse = {
+  station: Station;
+  startedAt: string;
+};

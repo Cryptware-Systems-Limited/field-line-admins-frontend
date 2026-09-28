@@ -1,4 +1,13 @@
-import type { CreateStationInput, LoginResponse, Station, StationListResponse } from './types';
+import type {
+  AppointStationAdminInput,
+  AppointmentResponse,
+  AssignedStationResponse,
+  CreateStationInput,
+  LoginResponse,
+  Station,
+  StationAdmin,
+  StationListResponse,
+} from './types';
 
 export const API_BASE_URL = (
   import.meta.env.VITE_API_BASE_URL || 'https://field-line-api-dev.onrender.com/api/v1'
@@ -61,4 +70,18 @@ export const api = {
     ),
   approveStation: (token: string, id: string) =>
     request<Station>(`/platform/stations/${id}/approve`, { method: 'POST' }, token),
+  listStationAdmins: (token: string, stationId: string) =>
+    request<StationAdmin[]>(`/platform/stations/${stationId}/admins`, {}, token),
+  appointStationAdmin: (
+    token: string,
+    stationId: string,
+    input: AppointStationAdminInput,
+  ) =>
+    request<AppointmentResponse>(
+      `/platform/stations/${stationId}/admins`,
+      { method: 'POST', body: JSON.stringify(input) },
+      token,
+    ),
+  getAssignedStation: (token: string) =>
+    request<AssignedStationResponse>('/station-admin/station', {}, token),
 };
