@@ -96,12 +96,16 @@ function Login({ onLogin }: { onLogin: (token: string, user: AdminUser) => void 
       <section className="login-story">
         <div><Brand /></div>
         <div className="login-story__copy">
-          <span className="eyebrow eyebrow--light">Secure administration portal</span>
-          <h1>One view of every station in your command.</h1>
-          <p>Onboard stations, manage access, and maintain a reliable audit trail across the Field-Line network.</p>
-          <div className="security-note"><ShieldCheck size={18} /> Protected by role-based access controls</div>
+          <div className="restricted-label"><span /> Restricted administrative system</div>
+          <h1>Control starts with verified access.</h1>
+          <p>Field-Line gives authorised command personnel a secure operational view of stations, identities, and accountability.</p>
+          <div className="system-scope">
+            <div><Building2 size={18} /><span><strong>Station registry</strong><small>Onboard and activate commands</small></span><em>01</em></div>
+            <div><UsersRound size={18} /><span><strong>Personnel authority</strong><small>Assign access by station and role</small></span><em>02</em></div>
+            <div><Activity size={18} /><span><strong>Operational audit</strong><small>Maintain accountable activity records</small></span><em>03</em></div>
+          </div>
         </div>
-        <small>© {new Date().getFullYear()} Cryptware Systems Limited</small>
+        <div className="login-story__footer"><span><i /> System status: protected</span><small>© {new Date().getFullYear()} Cryptware Systems Limited</small></div>
       </section>
       <section className="login-panel">
         <form className="auth-card" onSubmit={submit}>
