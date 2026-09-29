@@ -86,3 +86,44 @@ export type AssignedStationResponse = {
   station: Station;
   startedAt: string;
 };
+
+export type Officer = {
+  id: string;
+  email: string;
+  phone: string;
+  status: string;
+  phoneVerifiedAt?: string | null;
+  createdAt: string;
+  personnelProfile: {
+    personnelNumber: string;
+    firstName: string;
+    middleName?: string | null;
+    lastName: string;
+    rankOrPosition?: string | null;
+    department?: string | null;
+  };
+  devices: Array<{
+    id: string;
+    installationId: string;
+    platform: string;
+    status: string;
+    lastSeenAt?: string | null;
+  }>;
+};
+
+export type CreateOfficerInput = {
+  serviceNumber: string;
+  firstName: string;
+  middleName?: string;
+  lastName: string;
+  rank?: string;
+  department?: string;
+  phone: string;
+  email: string;
+  authorisationRef: string;
+};
+
+export type CreateOfficerResponse = {
+  officer: Officer;
+  temporaryPassword: string;
+};

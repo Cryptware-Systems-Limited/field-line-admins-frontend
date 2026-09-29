@@ -3,10 +3,13 @@ import type {
   AppointmentResponse,
   AssignedStationResponse,
   CreateStationInput,
+  CreateOfficerInput,
+  CreateOfficerResponse,
   LoginResponse,
   Station,
   StationAdmin,
   StationListResponse,
+  Officer,
 } from './types';
 
 export const API_BASE_URL = (
@@ -84,4 +87,12 @@ export const api = {
     ),
   getAssignedStation: (token: string) =>
     request<AssignedStationResponse>('/station-admin/station', {}, token),
+  listOfficers: (token: string) =>
+    request<Officer[]>('/station-admin/officers', {}, token),
+  createOfficer: (token: string, input: CreateOfficerInput) =>
+    request<CreateOfficerResponse>(
+      '/station-admin/officers',
+      { method: 'POST', body: JSON.stringify(input) },
+      token,
+    ),
 };
