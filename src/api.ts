@@ -95,4 +95,6 @@ export const api = {
       { method: 'POST', body: JSON.stringify(input) },
       token,
     ),
+  removeOfficer: (token: string, officerId: string) =>
+    request<void>(`/station-admin/officers/${officerId}`, { method: 'DELETE' }, token),
 };
