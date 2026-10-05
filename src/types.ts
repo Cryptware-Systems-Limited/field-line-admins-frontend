@@ -101,6 +101,7 @@ export type Officer = {
     lastName: string;
     rankOrPosition?: string | null;
     department?: string | null;
+    authorisationRef: string;
   };
   devices: Array<{
     id: string;
