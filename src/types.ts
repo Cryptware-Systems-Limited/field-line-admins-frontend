@@ -17,6 +17,39 @@ export type LoginResponse = {
   user: AdminUser;
 };
 
+export type StationOperationsDashboardResponse = {
+  date: string;
+  station: {
+    id: string;
+    code: string;
+    name: string;
+  };
+  incidents: {
+    loggedToday: number;
+    open: number;
+    underReview: number;
+    assigned: number;
+    inProgress: number;
+    resolved: number;
+    closed: number;
+    unassigned: number;
+  };
+  officers: { active: number };
+  assignments: Array<{
+    id: string;
+    referenceNumber: string;
+    status: string;
+    assignedOfficer: {
+      id: string;
+      personnelProfile?: {
+        personnelNumber: string;
+        firstName: string;
+        lastName: string;
+      } | null;
+    } | null;
+  }>;
+};
+
 export type StationStatus = 'DRAFT' | 'PENDING_APPROVAL' | 'ACTIVE' | 'SUSPENDED' | 'REJECTED';
 
 export type Station = {
