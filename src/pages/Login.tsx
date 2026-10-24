@@ -19,11 +19,13 @@ export function Login({ onLogin }: { onLogin: (token: string, user: AdminUser) =
         setLoading(true);
         try {
         const result = await api.login(email.trim(), password);
-        if (!result.user.roles.includes('PLATFORM_ADMIN') && !result.user.roles.includes('STATION_ADMIN')) {
+        if (!result.user.roles.some((role) =>
+            ['PLATFORM_ADMIN', 'STATION_ADMIN', 'STATION_OFFICER'].includes(role)
+            )) {
             await api.logout().catch(() => undefined);
             setError('This portal is restricted to authorised administrators.');
             return;
-        }
+            }
         onLogin(result.accessToken, result.user);
         } catch (requestError) {
         setError(getError(requestError));
