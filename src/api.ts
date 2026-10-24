@@ -1,4 +1,4 @@
-import type { AppointStationAdminInput, AppointmentResponse, AssignedStationResponse, CreateStationInput, CreateOfficerInput, CreateOfficerResponse, LoginResponse, Station, StationAdmin, StationListResponse, Officer } from './types';
+import type { AppointStationAdminInput, AppointmentResponse, AssignedStationResponse, CreateStationInput, CreateOfficerInput, CreateOfficerResponse, CreateStationOfficerInput, CreateStationOfficerResponse, LoginResponse, Station, StationAdmin, StationListResponse, StationOfficer, Officer, StationOperationsDashboardResponse } from './types';
 
 export const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'https://field-line-api-dev.onrender.com/api/v1').replace(/\/$/, '');
 
@@ -61,4 +61,8 @@ export const api = {
   getOfficer: (token: string, officerId: string) => request<Officer>(`/station-admin/officers/${officerId}`, {}, token),
   createOfficer: (token: string, input: CreateOfficerInput) => request<CreateOfficerResponse>('/station-admin/officers', { method: 'POST', body: JSON.stringify(input) }, token),
   removeOfficer: (token: string, officerId: string) => request<void>(`/station-admin/officers/${officerId}`, { method: 'DELETE' }, token),
+  listStationOfficers: (token: string) => request<StationOfficer[]>('/station-admin/station-officers', {}, token),
+  createStationOfficer: (token: string, input: CreateStationOfficerInput) => request<CreateStationOfficerResponse>('/station-admin/station-officers', { method: 'POST', body: JSON.stringify(input) }, token),
+  removeStationOfficer: (token: string, officerId: string) => request<void>(`/station-admin/station-officers/${officerId}`, { method: 'DELETE' }, token),
+  getStationOperationsDashboard: (token: string) => request<StationOperationsDashboardResponse>('/station-operations/dashboard', {}, token),
 };
