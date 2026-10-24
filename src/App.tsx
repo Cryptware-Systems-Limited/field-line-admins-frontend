@@ -5,6 +5,7 @@ import { ChangePassword } from './pages/ChangePassword';
 import { Login } from './pages/Login';
 import { PlatformDashboard } from './pages/PlatformDashboard';
 import { StationAdminDashboard } from './pages/StationAdminDashboard';
+import { StationOperationsDashboard } from './pages/StationOperationsDashboard';
 import type { AdminUser } from './types';
 
 export default function App() {
@@ -27,5 +28,8 @@ export default function App() {
   if (user.roles.includes('PLATFORM_ADMIN')) {
     return <PlatformDashboard token={token} user={user} onLogout={() => void logout()} />;
   }
-  return <StationAdminDashboard token={token} user={user} onLogout={() => void logout()} />;
+  if (user.roles.includes('STATION_ADMIN')) {
+    return <StationAdminDashboard token={token} user={user} onLogout={() => void logout()} />;
+  }
+  return <StationOperationsDashboard token={token} user={user} onLogout={() => void logout()} />;
 }
