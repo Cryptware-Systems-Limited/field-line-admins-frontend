@@ -4,7 +4,12 @@ import { LoaderCircle, Plus } from 'lucide-react';
 import { api } from '../api';
 import { ModalHeader } from '../components/modal_header';
 import { compact, getError } from '../utils/errors';
-import type { CreateOfficerInput, CreateOfficerResponse } from '../types';
+import type { CreateOfficerInput, CreateOfficerResponse, CreateStationOfficerResponse } from '../types';
+import { OfficerKind, OfficerKindToggle } from '../components/officer_toggle';
+
+export type CreatedOfficer =
+  | { kind: 'FIELD'; result: CreateOfficerResponse }
+  | { kind: 'STATION'; result: CreateStationOfficerResponse; input: CreateOfficerInput };
 
 const blankOfficer: CreateOfficerInput = {
   serviceNumber: '',
@@ -18,7 +23,13 @@ const blankOfficer: CreateOfficerInput = {
   authorisationRef: '',
 };
 
-export function CreateOfficerModal({ token, onClose, onCreated }: { token: string; onClose: () => void; onCreated: (result: CreateOfficerResponse) => void }) {
+const kindHints: Record<OfficerKind, string> = {
+  FIELD: 'Uses the Field-Line mobile app. Access is bound to a registered device.',
+  STATION: 'Handles web operations for this station through the Field-Line web portal.',
+};
+
+export function CreateOfficerModal({ token, onClose, onCreated }: { token: string; onClose: () => void; onCreated: (created: CreatedOfficer) => void }) {
+  const [kind, setKind] = useState<OfficerKind>('FIELD');
   const [form, setForm] = useState<CreateOfficerInput>(blankOfficer);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -32,7 +43,9 @@ export function CreateOfficerModal({ token, onClose, onCreated }: { token: strin
     setLoading(true);
     setError('');
     try {
-      onCreated(await api.createOfficer(token, compact(form)));
+      const payload = compact(form);
+      if (kind === 'FIELD') onCreated({ kind, result: await api.createOfficer(token, payload) });
+      else onCreated({ kind, result: await api.createStationOfficer(token, payload), input: form });
     } catch (requestError) {
       setError(getError(requestError));
     } finally {
@@ -43,9 +56,14 @@ export function CreateOfficerModal({ token, onClose, onCreated }: { token: strin
   return (
     <div className="modal-backdrop">
       <section className="modal">
-        <ModalHeader eyebrow="Officer onboarding" title="Add police officer" onClose={onClose} />
+        <ModalHeader eyebrow="Officer onboarding" title="Add officer" onClose={onClose} />
         <form onSubmit={submit}>
           {error && <div className="alert alert--error">{error}</div>}
+          <div className="form-section">
+            <h3>Officer type</h3>
+            <OfficerKindToggle value={kind} onChange={setKind} disabled={loading} />
+            <p className="muted small-copy">{kindHints[kind]}</p>
+          </div>
           <div className="form-section">
             <h3>Officer identity</h3>
             <div className="form-grid">
@@ -67,7 +85,7 @@ export function CreateOfficerModal({ token, onClose, onCreated }: { token: strin
               </label>
               <label>
                 Department / unit
-                <input value={form.department || ''} onChange={(event) => update('department', event.target.value)} placeholder="Patrol" />
+                <input value={form.department || ''} onChange={(event) => update('department', event.target.value)} placeholder={kind === 'FIELD' ? 'Patrol' : 'Operations'} />
               </label>
               <label>
                 Authorisation reference
@@ -93,7 +111,7 @@ export function CreateOfficerModal({ token, onClose, onCreated }: { token: strin
               Cancel
             </button>
             <button className="button button--primary" disabled={loading}>
-              {loading ? <LoaderCircle className="spin" size={18} /> : <Plus size={18} />} Create officer
+              {loading ? <LoaderCircle className="spin" size={18} /> : <Plus size={18} />} {kind === 'FIELD' ? 'Create field officer' : 'Create station officer'}
             </button>
           </footer>
         </form>
