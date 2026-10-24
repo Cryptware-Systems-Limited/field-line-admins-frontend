@@ -17,6 +17,40 @@ export type LoginResponse = {
   user: AdminUser;
 };
 
+export type StationOperationsDashboardResponse = {
+  date: string;
+  station: {
+    id: string;
+    code: string;
+    name: string;
+  };
+  incidents: {
+    loggedToday: number;
+    open: number;
+    underReview: number;
+    assigned: number;
+    inProgress: number;
+    resolved: number;
+    closed: number;
+    unassigned: number;
+  };
+  officers: { active: number };
+  assignments: Array<{
+    id: string;
+    referenceNumber: string;
+    status: string;
+    assignedOfficer: {
+      id: string;
+      personnelProfile?: {
+        personnelNumber: string;
+        firstName: string;
+        lastName: string;
+      } | null;
+    } | null;
+  }>;
+};
+
+
 export type StationStatus = 'DRAFT' | 'PENDING_APPROVAL' | 'ACTIVE' | 'SUSPENDED' | 'REJECTED';
 
 export type Station = {
@@ -42,7 +76,12 @@ export type CreateStationInput = Omit<Station, 'id' | 'status' | 'createdAt' | '
 
 export type StationListResponse = {
   items: Station[];
-  pagination: { page: number; limit: number; total: number; pages: number };
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    pages: number;
+  };
 };
 
 export type StationAdmin = {
@@ -127,4 +166,12 @@ export type CreateOfficerInput = {
 export type CreateOfficerResponse = {
   officer: Officer;
   temporaryPassword: string;
+};
+
+export type StationOfficer = Omit<Officer, 'devices'>;
+
+export type CreateStationOfficerInput = CreateOfficerInput;
+
+export type CreateStationOfficerResponse = {
+  temporaryPassword?: string;
 };
