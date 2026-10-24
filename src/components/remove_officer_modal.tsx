@@ -3,20 +3,30 @@ import { LoaderCircle, Trash2 } from 'lucide-react';
 
 import { api } from '../api';
 import { getError } from '../utils/errors';
-import type { Officer } from '../types';
+import type { OfficerKind } from '../components/officer_toggle';
 
-type Props = { token: string; officer: Officer; onClose: () => void; onRemoved: (officerId: string) => void };
+type RemovableOfficer = { id: string; personnelProfile: { firstName: string; lastName: string } };
 
-export function RemoveOfficerModal({ token, officer, onClose, onRemoved }: Props) {
+type Props = {
+  token: string;
+  kind: OfficerKind;
+  officer: RemovableOfficer;
+  onClose: () => void;
+  onRemoved: (officerId: string) => void;
+};
+
+export function RemoveOfficerModal({ token, kind, officer, onClose, onRemoved }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const fullName = `${officer.personnelProfile.firstName} ${officer.personnelProfile.lastName}`;
+  const isField = kind === 'FIELD';
 
   async function remove() {
     setLoading(true);
     setError('');
     try {
-      await api.removeOfficer(token, officer.id);
+      if (isField) await api.removeOfficer(token, officer.id);
+      else await api.removeStationOfficer(token, officer.id);
       onRemoved(officer.id);
     } catch (requestError) {
       setError(getError(requestError));
@@ -31,11 +41,15 @@ export function RemoveOfficerModal({ token, officer, onClose, onRemoved }: Props
           <span className="round-icon round-icon--danger">
             <Trash2 />
           </span>
-          <span className="eyebrow">Revoke officer access</span>
+          <span className="eyebrow">{isField ? 'Revoke field officer access' : 'Revoke station officer access'}</span>
           <h2>Remove {fullName}?</h2>
-          <p>This immediately disables the officer account, ends their station assignment, and revokes all registered devices and sessions.</p>
+          <p>
+            {isField
+              ? 'This immediately disables the officer account, ends their station assignment, and revokes all registered devices and sessions.'
+              : 'This immediately removes the officer from web operations at this station and revokes their session.'}
+          </p>
           {error && <div className="alert alert--error">{error}</div>}
-          <div className="alert alert--warning">Historical records and audit activity will be retained. This action does not erase policing records.</div>
+          {isField && <div className="alert alert--warning">Historical records and audit activity will be retained. This action does not erase policing records.</div>}
           <div className="confirmation-actions">
             <button className="button button--ghost" onClick={onClose} disabled={loading}>
               Cancel
