@@ -1356,3 +1356,309 @@ tbody tr:hover {
     margin-left: 0;
   }
 }
+/* ---------- Form controls ---------- */
+.ops-textarea {
+  width: 100%;
+  min-height: 96px;
+  padding: 12px 14px;
+  border: 1px solid rgba(127, 127, 127, 0.35);
+  border-radius: 10px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.ops-filter {
+  min-height: 42px;
+  padding: 0 12px;
+  border: 1px solid rgba(127, 127, 127, 0.35);
+  border-radius: 10px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+
+/* ---------- Header ---------- */
+.ops-detail-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.ops-detail-title {
+  flex: 1 1 320px;
+  min-width: 0;
+}
+
+.ops-detail-title h2 {
+  margin: 4px 0 0;
+  overflow-wrap: anywhere;
+}
+
+.ops-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.ops-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.ops-actions--end {
+  justify-content: flex-end;
+  flex-wrap: nowrap;
+}
+
+/* ---------- Tabs---------- */
+.ops-tabs {
+  display: flex;
+  gap: 4px;
+  margin: 24px 0 20px;
+  border-bottom: 1px solid rgba(127, 127, 127, 0.25);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.ops-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.ops-tab {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 -1px;
+  padding: 10px 14px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-weight: 500;
+  white-space: nowrap;
+  opacity: 0.6;
+  cursor: pointer;
+  transition: opacity 0.15s ease, border-color 0.15s ease;
+}
+
+.ops-tab:hover {
+  opacity: 0.9;
+}
+
+.ops-tab:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: -2px;
+  border-radius: 6px;
+}
+
+.ops-tab[aria-selected='true'] {
+  opacity: 1;
+  font-weight: 600;
+  border-bottom-color: currentColor;
+}
+
+.ops-tab-count {
+  min-width: 20px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: rgba(127, 127, 127, 0.18);
+  font-size: 0.75em;
+  font-weight: 600;
+  line-height: 1.5;
+  text-align: center;
+}
+
+/* ---------- Card shell ---------- */
+.content-card.ops-detail {
+  padding: 28px 32px 32px;
+}
+
+@media (max-width: 640px) {
+  .content-card.ops-detail {
+    padding: 20px 16px 24px;
+  }
+}
+
+/* ---------- Sections ---------- */
+
+.ops-section-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 12px;
+}
+
+.ops-section-heading h3 {
+  margin: 0;
+}
+
+.ops-description {
+  margin: 0;
+  white-space: pre-wrap;
+  line-height: 1.6;
+}
+
+.ops-empty {
+  padding: 28px 16px;
+  border: 1px dashed rgba(127, 127, 127, 0.35);
+  border-radius: 12px;
+  text-align: center;
+}
+
+.ops-empty p {
+  margin: 0;
+}
+
+/* ---------- Label/value grid ---------- */
+.ops-dl {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 18px 24px;
+  margin: 0;
+}
+
+.ops-dl > div {
+  min-width: 0;
+}
+
+.ops-dl dt {
+  margin: 0 0 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+
+.ops-dl dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.ops-inline-icon {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.ops-inline-icon svg {
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+/* ---------- Tables ---------- */
+.ops-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.ops-table th,
+.ops-table td {
+  padding: 12px;
+  text-align: left;
+  vertical-align: middle;
+  border-bottom: 1px solid rgba(127, 127, 127, 0.18);
+}
+
+.ops-table th {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.6;
+  white-space: nowrap;
+}
+
+.ops-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.ops-table .row-actions {
+  width: 1%;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.ops-sub {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.85em;
+}
+
+.ops-cell-text {
+  min-width: 200px;
+  max-width: 360px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.ops-nowrap {
+  white-space: nowrap;
+}
+
+.ops-break {
+  overflow-wrap: anywhere;
+}
+
+/* ---------- Timeline / pickers (used by modals & activity list) ---------- */
+.ops-timeline {
+  display: grid;
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ops-timeline li {
+  display: grid;
+  gap: 2px;
+  padding-left: 14px;
+  border-left: 2px solid rgba(127, 127, 127, 0.3);
+}
+
+.ops-pick-list {
+  display: grid;
+  gap: 8px;
+  max-height: 280px;
+  margin-top: 12px;
+  overflow-y: auto;
+}
+
+.ops-pick-list .button {
+  justify-content: flex-start;
+  text-align: left;
+}
+
+.ops-pick-list .button span {
+  display: grid;
+  gap: 2px;
+}
+
+/* ---------- Mobile ---------- */
+@media (max-width: 640px) {
+  .ops-actions {
+    width: 100%;
+  }
+
+  .ops-detail-header .ops-actions .button {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+
+  .ops-dl {
+    grid-template-columns: 1fr;
+  }
+}
