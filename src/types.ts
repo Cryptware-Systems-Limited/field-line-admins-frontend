@@ -50,7 +50,6 @@ export type StationOperationsDashboardResponse = {
   }>;
 };
 
-
 export type StationStatus = 'DRAFT' | 'PENDING_APPROVAL' | 'ACTIVE' | 'SUSPENDED' | 'REJECTED';
 
 export type Station = {
@@ -175,3 +174,253 @@ export type CreateStationOfficerInput = CreateOfficerInput;
 export type CreateStationOfficerResponse = {
   temporaryPassword?: string;
 };
+
+export type Paginated<T> = { items: T[]; pagination?: StationListResponse['pagination'] };
+export type ListResult<T> = T[] | Paginated<T>;
+
+export type PersonnelRef = {
+  id: string;
+  email?: string | null;
+  personnelProfile?: {
+    firstName?: string | null;
+    lastName?: string | null;
+    personnelNumber?: string | null;
+    rankOrPosition?: string | null;
+  } | null;
+};
+
+/** The API sends coordinates and accuracy as strings (e.g. "6.524379"). */
+export type IncidentLocation = {
+  latitude?: number | string | null;
+  longitude?: number | string | null;
+  accuracyMeters?: number | string | null;
+  capturedAt?: string | null;
+  resolvedAddress?: string | null;
+  landmarkOrDirections?: string | null;
+  source?: string | null;
+};
+
+export type IncidentPerson = {
+  id: string;
+  role?: string | null;
+  fullName?: string | null;
+  dateOfBirth?: string | null;
+  phone?: string | null;
+  address?: string | null;
+  idType?: string | null;
+  idNumber?: string | null;
+  officerNotes?: string | null;
+};
+
+export type IncidentVehicle = {
+  id: string;
+  plateNumber?: string | null;
+  type?: string | null;
+  makeModel?: string | null;
+  colour?: string | null;
+  role?: string | null;
+  driverOwnerStatus?: string | null;
+};
+
+export type IncidentStatement = {
+  id: string;
+  method?: string | null;
+  personId?: string | null;
+  content?: string | null;
+  audioEvidenceId?: string | null;
+  officerSummary?: string | null;
+  clientCreatedAt?: string | null;
+  createdAt?: string | null;
+};
+
+export type IncidentEvidence = {
+  id: string;
+  type?: string | null;
+  status?: string | null;
+  mimeType?: string | null;
+  sizeBytes?: number | null;
+  description?: string | null;
+  originalFileName?: string | null;
+  capturedAt?: string | null;
+  createdAt?: string | null;
+  url?: string | null;
+  secureUrl?: string | null;
+};
+
+export type Suspect = {
+  id: string;
+  fullName?: string | null;
+  aliases?: string[] | null;
+  dateOfBirth?: string | null;
+  gender?: string | null;
+  phone?: string | null;
+  address?: string | null;
+  idType?: string | null;
+  idNumber?: string | null;
+  identifyingMarks?: string | null;
+  notes?: string | null;
+  status?: string | null;
+  createdAt?: string | null;
+  updatedAt?: string | null;
+};
+
+/** An incident's suspect entry — either a link wrapping a suspect, or the suspect itself. */
+export type IncidentSuspectLink = {
+  id?: string;
+  suspectId?: string | null;
+  notes?: string | null;
+  suspect?: Suspect | null;
+  fullName?: string | null;
+  status?: string | null;
+};
+
+export type Incident = {
+  id: string;
+  reference?: string | null;
+  referenceNumber?: string | null;
+  type?: string | null;
+  otherTypeDescription?: string | null;
+  priority?: string | null;
+  status?: string | null;
+  occurredAt?: string | null;
+  clientCreatedAt?: string | null;
+  description?: string | null;
+  location?: IncidentLocation | null;
+  assignedOfficerId?: string | null;
+  assignedOfficer?: PersonnelRef | null;
+  reportedBy?: PersonnelRef | null;
+  reportingOfficer?: PersonnelRef | null;
+  revision?: number | null;
+  source?: string | null;
+  receivedAt?: string | null;
+  case?: { id?: string; referenceNumber?: string | null; status?: string | null; openedAt?: string | null; closedAt?: string | null } | null;
+  people?: IncidentPerson[] | null;
+  vehicles?: IncidentVehicle[] | null;
+  statements?: IncidentStatement[] | null;
+  evidence?: IncidentEvidence[] | null;
+  suspects?: IncidentSuspectLink[] | null;
+  createdAt?: string | null;
+  updatedAt?: string | null;
+};
+
+export type IncidentActivity = {
+  id?: string;
+  action?: string | null;
+  type?: string | null;
+  event?: string | null;
+  description?: string | null;
+  message?: string | null;
+  summary?: string | null;
+  reason?: string | null;
+  actor?: PersonnelRef | null;
+  createdAt?: string | null;
+};
+
+/* Request bodies (from the API docs) */
+
+export type IncidentLocationInput = {
+  latitude: number;
+  longitude: number;
+  accuracyMeters?: number;
+  capturedAt?: string;
+  resolvedAddress?: string;
+  landmarkOrDirections?: string;
+  source?: string;
+};
+
+export type UpdateIncidentInput = {
+  type: string;
+  otherTypeDescription?: string;
+  priority: string;
+  occurredAt: string;
+  clientCreatedAt?: string;
+  description: string;
+  location?: IncidentLocationInput;
+};
+
+export type UpsertIncidentPersonInput = {
+  role: string;
+  fullName: string;
+  dateOfBirth?: string;
+  phone?: string;
+  address?: string;
+  idType?: string;
+  idNumber?: string;
+  officerNotes?: string;
+};
+
+export type UpsertIncidentVehicleInput = {
+  plateNumber?: string;
+  type: string;
+  makeModel?: string;
+  colour?: string;
+  role: string;
+  driverOwnerStatus?: string;
+};
+
+export type UpsertIncidentStatementInput = {
+  method: string;
+  personId?: string;
+  content?: string;
+  audioEvidenceId?: string;
+  officerSummary?: string;
+  clientCreatedAt: string;
+};
+
+export type EvidenceUploadRequestInput = {
+  type: string;
+  mimeType: string;
+  sizeBytes: number;
+  sha256: string;
+  capturedAt?: string;
+  description?: string;
+  originalFileName: string;
+};
+
+/** Signed Cloudinary upload. Confirmed by the mobile app: { uploadUrl, apiKey, signature, parameters }. */
+export type EvidenceUploadTicket = {
+  uploadUrl?: string;
+  parameters?: Record<string, string | number | boolean>;
+  cloudName?: string;
+  apiKey?: string;
+  timestamp?: number | string;
+  signature?: string;
+  publicId?: string;
+  folder?: string;
+  resourceType?: string;
+  deliveryType?: string;
+  fields?: Record<string, string | number>;
+  params?: Record<string, string | number>;
+};
+
+export type EvidenceUploadCompleteInput = {
+  assetId: string;
+  publicId: string;
+  version: number;
+  signature: string;
+  resourceType: string;
+  deliveryType: string;
+  bytes: number;
+  format: string;
+  etag: string;
+};
+
+export type AssignIncidentInput = { officerId: string; reason?: string };
+export type ChangeIncidentStatusInput = { status: string; reason?: string };
+
+export type SuspectInput = {
+  fullName: string;
+  aliases?: string[];
+  dateOfBirth?: string;
+  gender?: string;
+  phone?: string;
+  address?: string;
+  idType?: string;
+  idNumber?: string;
+  identifyingMarks?: string;
+  notes?: string;
+  status?: string;
+};
+
+export type CreateSuspectInput = SuspectInput & { photoSessionId?: string };
+export type LinkSuspectInput = { notes?: string };
