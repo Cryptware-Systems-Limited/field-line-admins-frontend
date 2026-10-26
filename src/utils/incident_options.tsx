@@ -34,7 +34,6 @@ export const evidenceTypeOptions = options('PHOTO', 'VIDEO', 'AUDIO', 'DOCUMENT'
 export const suspectStatusOptions = options('SUSPECT', 'WANTED', 'ARRESTED', 'RELEASED');
 export const genderOptions = options('MALE', 'FEMALE');
 
-/** Maps incident status / priority onto the badge colours already in the stylesheet. */
 export function incidentStatusClass(status?: string | null) {
   switch (status) {
     case 'OPEN':
