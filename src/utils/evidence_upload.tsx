@@ -1,5 +1,5 @@
 import { api, ApiError } from '../api';
-import type { EvidenceUploadTicket } from '../types';
+import type { EvidenceUploadCompleteInput, EvidenceUploadTicket } from '../types';
 import { compact } from './errors';
 
 export function evidenceTypeForMime(mimeType: string) {
@@ -25,7 +25,8 @@ type CloudinaryUploadResult = {
   format?: string;
   etag: string;
 };
-async function uploadToCloudinary(ticket: EvidenceUploadTicket, file: File) {
+
+export async function uploadToCloudinary(ticket: EvidenceUploadTicket, file: File) {
   const resourceType = ticket.resourceType || 'auto';
   const url = ticket.uploadUrl || (ticket.cloudName ? `https://api.cloudinary.com/v1_1/${ticket.cloudName}/${resourceType}/upload` : '');
   if (!url) throw new ApiError('The server did not return an upload destination for this file.', 0);
@@ -52,6 +53,21 @@ async function uploadToCloudinary(ticket: EvidenceUploadTicket, file: File) {
   const result = (await response.json().catch(() => null)) as (CloudinaryUploadResult & { error?: { message?: string } }) | null;
   if (!response.ok || !result) throw new ApiError(result?.error?.message || `File upload failed (${response.status})`, response.status);
   return result;
+}
+
+/** Maps Cloudinary's upload response onto the API's `complete` body. */
+export function toCompleteInput(uploaded: CloudinaryUploadResult): EvidenceUploadCompleteInput {
+  return {
+    assetId: uploaded.asset_id,
+    publicId: uploaded.public_id,
+    version: uploaded.version,
+    signature: uploaded.signature,
+    resourceType: uploaded.resource_type,
+    deliveryType: uploaded.type,
+    bytes: uploaded.bytes,
+    format: uploaded.format ?? '',
+    etag: uploaded.etag,
+  };
 }
 
 type UploadArgs = {
@@ -90,15 +106,5 @@ export async function uploadEvidenceFile({ token, incidentId, evidenceId, file, 
   const uploaded = await uploadToCloudinary(ticket, file);
 
   onStep('Finalising evidence record…');
-  await api.completeEvidenceUpload(token, incidentId, evidenceId, {
-    assetId: uploaded.asset_id,
-    publicId: uploaded.public_id,
-    version: uploaded.version,
-    signature: uploaded.signature,
-    resourceType: uploaded.resource_type,
-    deliveryType: uploaded.type,
-    bytes: uploaded.bytes,
-    format: uploaded.format ?? '',
-    etag: uploaded.etag,
-  });
+  await api.completeEvidenceUpload(token, incidentId, evidenceId, toCompleteInput(uploaded));
 }
