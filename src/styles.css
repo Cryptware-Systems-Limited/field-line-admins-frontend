@@ -1356,7 +1356,6 @@ tbody tr:hover {
     margin-left: 0;
   }
 }
-/* ---------- Form controls ---------- */
 .ops-textarea {
   width: 100%;
   min-height: 96px;
@@ -1380,7 +1379,6 @@ tbody tr:hover {
   font: inherit;
 }
 
-/* ---------- Header ---------- */
 .ops-detail-header {
   display: flex;
   flex-wrap: wrap;
@@ -1419,7 +1417,6 @@ tbody tr:hover {
   flex-wrap: nowrap;
 }
 
-/* ---------- Tabs---------- */
 .ops-tabs {
   display: flex;
   gap: 4px;
@@ -1479,7 +1476,6 @@ tbody tr:hover {
   text-align: center;
 }
 
-/* ---------- Card shell ---------- */
 .content-card.ops-detail {
   padding: 28px 32px 32px;
 }
@@ -1490,7 +1486,6 @@ tbody tr:hover {
   }
 }
 
-/* ---------- Sections ---------- */
 
 .ops-section-heading {
   display: flex;
@@ -1522,7 +1517,6 @@ tbody tr:hover {
   margin: 0;
 }
 
-/* ---------- Label/value grid ---------- */
 .ops-dl {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -1559,7 +1553,6 @@ tbody tr:hover {
   margin-top: 3px;
 }
 
-/* ---------- Tables ---------- */
 .ops-table {
   width: 100%;
   border-collapse: collapse;
@@ -1613,7 +1606,6 @@ tbody tr:hover {
   overflow-wrap: anywhere;
 }
 
-/* ---------- Timeline / pickers (used by modals & activity list) ---------- */
 .ops-timeline {
   display: grid;
   gap: 16px;
@@ -1647,7 +1639,6 @@ tbody tr:hover {
   gap: 2px;
 }
 
-/* ---------- Mobile ---------- */
 @media (max-width: 640px) {
   .ops-actions {
     width: 100%;
@@ -1660,5 +1651,178 @@ tbody tr:hover {
 
   .ops-dl {
     grid-template-columns: 1fr;
+  }
+}
+.ops-photo-capture {
+  display: grid;
+  gap: 12px;
+  padding-bottom: 16px;
+}
+
+.ops-photo-capture .muted {
+  margin: 0;
+}
+
+.ops-photo-capture > .button {
+  justify-self: start;
+}
+
+.ops-photo-capture--done {
+  grid-template-columns: 120px 1fr;
+  align-items: start;
+  gap: 16px;
+}
+
+.ops-photo-capture--done strong {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #147753;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.ops-photo-capture--done .muted {
+  margin-bottom: 12px;
+}
+
+.ops-qr {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.ops-qr__code {
+  display: grid;
+  place-items: center;
+  width: 192px;
+  height: 192px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--white); 
+  color: var(--muted);
+}
+
+.ops-qr__steps {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+}
+
+.ops-qr__steps > strong {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--navy);
+  font-size: 13px;
+}
+
+.ops-qr__steps ol {
+  margin: 0;
+  padding-left: 18px;
+  color: #4d5d6c;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.ops-qr__steps .muted {
+  margin: 0;
+}
+
+.ops-qr__steps .muted svg,
+.ops-photo-capture .muted svg {
+  vertical-align: -2px;
+  margin-right: 4px;
+}
+
+.ops-photo-expired {
+  display: grid;
+  gap: 10px;
+  justify-items: start;
+}
+
+.ops-suspect-photo {
+  display: block;
+  width: 100%;
+  max-width: 320px;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #f3f7f9;
+}
+
+.ops-photo-capture--done .ops-suspect-photo {
+  max-width: 120px;
+}
+
+.ops-photo-placeholder {
+  display: grid;
+  place-items: center;
+  width: 120px;
+  aspect-ratio: 3 / 4;
+  border: 1px dashed #c9d6e0;
+  border-radius: 12px;
+  background: #f7fafc;
+  color: #7f9aac;
+}
+
+.drawer .ops-suspect-photo {
+  max-width: 220px;
+}
+
+.ops-capture-card {
+  width: min(420px, 100%);
+}
+
+.ops-capture-card h1 {
+  font-size: 28px;
+}
+
+.ops-capture-card .muted {
+  margin-bottom: 20px;
+}
+
+.ops-capture-preview {
+  display: block;
+  width: 100%;
+  max-height: 55vh;
+  object-fit: contain;
+  margin: 0 0 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #f3f7f9;
+}
+
+label.ops-capture-button {
+  display: inline-flex;
+  margin: 0;
+  font-size: 13px;
+}
+
+.button--primary.ops-capture-button {
+  height: 52px;
+  font-size: 15px;
+}
+
+.ops-capture-actions {
+  display: grid;
+  gap: 10px;
+}
+
+.ops-capture-actions .button--wide {
+  margin-top: 0;
+}
+
+@media (max-width: 600px) {
+  .ops-qr,
+  .ops-photo-capture--done {
+    grid-template-columns: 1fr;
+  }
+
+  .ops-qr__code {
+    justify-self: center;
   }
 }
