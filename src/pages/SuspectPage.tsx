@@ -6,7 +6,7 @@ import type { Suspect } from '../types';
 import { getError } from '../utils/errors';
 import { formatDate, humanize } from '../utils/incident_options';
 import { SuspectDrawer } from '../components/suspect_drawer';
-import { SuspectFormModal } from '../components/suspect_form';
+import { SuspectFormModal } from '../components/suspect_form_modal';
 
 export function SuspectsPage({ token }: { token: string }) {
   const [suspects, setSuspects] = useState<Suspect[]>([]);
