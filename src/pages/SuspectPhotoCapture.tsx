@@ -11,10 +11,6 @@ export const SUSPECT_PHOTO_CAPTURE_PATH = '/capture/suspect-photo';
 
 type Stage = 'pick' | 'preview' | 'uploading' | 'done';
 
-/**
- * Phone side of suspect photo capture. Opened from the QR code — no login; the one-time
- * token in the URL authorises the upload.
- */
 export function SuspectPhotoCapture({ captureToken }: { captureToken: string | null }) {
   const [stage, setStage] = useState<Stage>('pick');
   const [file, setFile] = useState<File | null>(null);
