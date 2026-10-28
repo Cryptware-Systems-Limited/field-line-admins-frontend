@@ -26,6 +26,11 @@ import type {
   StationOperationsDashboardResponse,
   Suspect,
   SuspectInput,
+  SuspectPhotoAccess,
+  SuspectPhotoSession,
+  SuspectPhotoUploadRequestInput,
+  SuspectPhotoUploadResult,
+  SuspectPhotoUploadTicket,
   UpdateIncidentInput,
   UpsertIncidentPersonInput,
   UpsertIncidentStatementInput,
@@ -136,4 +141,14 @@ export const api = {
   updateSuspect: (token: string, suspectId: string, input: SuspectInput) => request<unknown>(`${ops}/suspects/${suspectId}`, send('PUT', input), token),
   linkSuspect: (token: string, incidentId: string, suspectId: string, input: LinkSuspectInput) => request<unknown>(`${ops}/incidents/${incidentId}/suspects/${suspectId}`, send('POST', input), token),
   unlinkSuspect: (token: string, incidentId: string, suspectId: string) => request<void>(`${ops}/incidents/${incidentId}/suspects/${suspectId}`, send('DELETE'), token),
+
+  // Station operations — suspect photo capture (desk side, signed in)
+  createSuspectPhotoSession: (token: string) => request<SuspectPhotoSession>(`${ops}/suspect-photo-sessions`, send('POST'), token),
+  getSuspectPhotoSession: (token: string, sessionId: string) => request<SuspectPhotoSession>(`${ops}/suspect-photo-sessions/${sessionId}`, {}, token),
+  cancelSuspectPhotoSession: (token: string, sessionId: string) => request<void>(`${ops}/suspect-photo-sessions/${sessionId}`, send('DELETE'), token),
+  getSuspectPhotoAccess: (token: string, suspectId: string, photoId: string) => request<SuspectPhotoAccess>(`${ops}/suspects/${suspectId}/photos/${photoId}/access`, {}, token),
+
+  // Public — suspect photo capture (phone side, authorised by the one-time token in the QR link)
+  requestSuspectPhotoUpload: (captureToken: string, input: SuspectPhotoUploadRequestInput) => request<SuspectPhotoUploadTicket>(`/public/suspect-photo-sessions/${encodeURIComponent(captureToken)}/upload-request`, send('POST', input)),
+  completeSuspectPhotoUpload: (captureToken: string, input: EvidenceUploadCompleteInput) => request<SuspectPhotoUploadResult>(`/public/suspect-photo-sessions/${encodeURIComponent(captureToken)}/complete`, send('POST', input)),
 };
