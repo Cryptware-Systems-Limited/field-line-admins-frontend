@@ -1,8 +1,7 @@
-import type { Incident, PersonnelRef } from '../types';
+import type { Incident, PersonnelRef, Suspect } from '../types';
 
 export type Option = { value: string; label: string };
 
-/** THEFT → "Theft", USED_BY_SUSPECT → "Used By Suspect". */
 export function humanize(value?: string | null) {
   if (!value) return '—';
   return value
@@ -14,13 +13,6 @@ export function humanize(value?: string | null) {
 
 const options = (...values: string[]): Option[] => values.map((value) => ({ value, label: humanize(value) }));
 
-/*
- * Enum values. Confirmed from API responses: THEFT, ROAD_ACCIDENT, URGENT, OPEN, UNDER_REVIEW, ASSIGNED,
- * IN_PROGRESS, RESOLVED, CLOSED, VICTIM, WITNESS, NIN, CAR, MOTORCYCLE, USED_BY_SUSPECT, INVOLVED,
- * UNKNOWN, OWNER, TYPED, DICTATED, AUDIO, PHOTO, SUSPECT, GPS.
- * Everything else is a best guess — align these lists with Swagger. A value the API returns that
- * isn't listed still displays correctly (SelectField adds it).
- */
 export const incidentTypeOptions = options('THEFT', 'ROBBERY', 'ASSAULT', 'BURGLARY', 'FRAUD', 'DOMESTIC_VIOLENCE', 'KIDNAPPING', 'MISSING_PERSON', 'ROAD_ACCIDENT', 'VANDALISM', 'OTHER');
 export const priorityOptions = options('LOW', 'MEDIUM', 'HIGH', 'URGENT');
 export const incidentStatusOptions = options('OPEN', 'UNDER_REVIEW', 'ASSIGNED', 'IN_PROGRESS', 'RESOLVED', 'CLOSED');
@@ -68,7 +60,6 @@ export function incidentTitle(incident: Incident) {
   return incident.type ? humanize(incident.type) : 'Incident';
 }
 
-/** Parses the API's numeric strings ("6.524379") as well as plain numbers. */
 export function toNumber(value?: number | string | null) {
   if (value === null || value === undefined || value === '') return null;
   const parsed = typeof value === 'number' ? value : Number.parseFloat(value);
@@ -101,7 +92,6 @@ export function formatDate(value?: string | null) {
   return date ? new Intl.DateTimeFormat('en-NG', { dateStyle: 'medium' }).format(date) : value || '—';
 }
 
-/** ISO → value for <input type="datetime-local"> in the user's timezone. */
 export function toDateTimeLocal(value?: string | null) {
   const date = parse(value);
   if (!date) return '';
@@ -112,7 +102,6 @@ export function fromDateTimeLocal(value: string) {
   return value ? new Date(value).toISOString() : '';
 }
 
-/** ISO or YYYY-MM-DD → value for <input type="date">. */
 export function toDateInput(value?: string | null) {
   return value ? value.slice(0, 10) : '';
 }
@@ -127,4 +116,8 @@ export function formatBytes(bytes?: number | null) {
     unit += 1;
   }
   return `${size.toFixed(unit ? 1 : 0)} ${units[unit]}`;
+}
+
+export function suspectPhotoId(suspect: Suspect) {
+  return suspect.photos?.find((photo) => photo.id)?.id || suspect.photo?.id || suspect.photoId || null;
 }
