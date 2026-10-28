@@ -189,7 +189,6 @@ export type PersonnelRef = {
   } | null;
 };
 
-/** The API sends coordinates and accuracy as strings (e.g. "6.524379"). */
 export type IncidentLocation = {
   latitude?: number | string | null;
   longitude?: number | string | null;
@@ -249,6 +248,9 @@ export type IncidentEvidence = {
 
 export type Suspect = {
   id: string;
+  photoId?: string | null;
+  photo?: { id?: string | null } | null;
+  photos?: Array<{ id?: string | null }> | null;
   fullName?: string | null;
   aliases?: string[] | null;
   dateOfBirth?: string | null;
@@ -424,3 +426,42 @@ export type SuspectInput = {
 
 export type CreateSuspectInput = SuspectInput & { photoSessionId?: string };
 export type LinkSuspectInput = { notes?: string };
+
+
+export type SuspectPhotoSession = {
+  id: string;
+  status: string;
+  expiresAt?: string | null;
+  captureUrl?: string | null;
+  uploadedAt?: string | null;
+  photo?: {
+    mimeType?: string | null;
+    sizeBytes?: number | null;
+    capturedAt?: string | null;
+    previewUrl?: string | null;
+  } | null;
+};
+
+export type SuspectPhotoAccess = {
+  photoId: string;
+  previewUrl: string;
+  expiresInSeconds?: number;
+};
+
+export type SuspectPhotoUploadRequestInput = {
+  mimeType: string;
+  sizeBytes: number;
+  sha256: string;
+  capturedAt?: string;
+};
+
+export type SuspectPhotoUploadTicket = EvidenceUploadTicket & {
+  sessionId?: string;
+  expiresAt?: string;
+};
+
+export type SuspectPhotoUploadResult = {
+  sessionId?: string;
+  status?: string;
+  uploadedAt?: string;
+};
