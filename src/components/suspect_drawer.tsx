@@ -4,7 +4,8 @@ import { LoaderCircle, Pencil, X } from 'lucide-react';
 import { api } from '../api';
 import type { Suspect } from '../types';
 import { getError } from '../utils/errors';
-import { formatDate, humanize } from '../utils/incident_options';
+import { formatDate, humanize, suspectPhotoId } from '../utils/incident_options';
+import { SuspectPhoto } from './suspect_photo';
 
 type Props = { token: string; suspectId: string; refreshKey: number; onClose: () => void; onEdit: (suspect: Suspect) => void };
 
@@ -45,6 +46,11 @@ export function SuspectDrawer({ token, suspectId, refreshKey, onClose, onEdit }:
           </div>
         ) : (
           <>
+            {suspectPhotoId(suspect) && (
+              <section className="detail-section">
+                <SuspectPhoto token={token} suspectId={suspect.id} photoId={suspectPhotoId(suspect)!} alt={suspect.fullName || 'Suspect photo'} />
+              </section>
+            )}
             <div className="officer-profile">
               <span className="avatar officer-avatar">{(suspect.fullName || '?')[0].toUpperCase()}</span>
               <div>
