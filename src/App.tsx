@@ -6,7 +6,12 @@ import { Login } from './pages/Login';
 import { PlatformDashboard } from './pages/PlatformDashboard';
 import { StationAdminDashboard } from './pages/StationAdminDashboard';
 import { StationOperationsDashboard } from './pages/StationOperationsDashboard';
+import { SUSPECT_PHOTO_CAPTURE_PATH, SuspectPhotoCapture } from './pages/SuspectPhotoCapture';
 import type { AdminUser } from './types';
+
+// Public page opened from the suspect-photo QR code (no login). Read once — it doesn't change while the app runs.
+const isPhotoCapture = window.location.pathname.replace(/\/$/, '') === SUSPECT_PHOTO_CAPTURE_PATH;
+const captureToken = new URLSearchParams(window.location.search).get('token');
 
 export default function App() {
   const [token, setToken] = useState<string | null>(null);
@@ -23,6 +28,7 @@ export default function App() {
     setUser(null);
   }
 
+  if (isPhotoCapture) return <SuspectPhotoCapture captureToken={captureToken} />;
   if (!token || !user) return <Login onLogin={loggedIn} />;
   if (user.mustChangePassword) return <ChangePassword token={token} user={user} onDone={setUser} />;
   if (user.roles.includes('PLATFORM_ADMIN')) {
