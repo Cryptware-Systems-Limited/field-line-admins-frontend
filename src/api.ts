@@ -124,7 +124,8 @@ export const api = {
   // Station operations — incidents
   listIncidents: async (token: string) => toList(await request<ListResult<Incident>>(`${ops}/incidents`, {}, token)),
   getIncident: (token: string, incidentId: string) => request<Incident>(`${ops}/incidents/${incidentId}`, {}, token),
-  updateIncident: (token: string, incidentId: string, input: UpdateIncidentInput) => request<unknown>(`${ops}/incidents/${incidentId}`, send('PUT', input), token),
+  upsertIncident: (token: string, incidentId: string, input: UpdateIncidentInput) => request<Incident>(`${ops}/incidents/${incidentId}`, send('PUT', input), token),
+  updateIncident: (token: string, incidentId: string, input: UpdateIncidentInput) => request<Incident>(`${ops}/incidents/${incidentId}`, send('PUT', input), token),
   upsertIncidentPerson: (token: string, incidentId: string, personId: string, input: UpsertIncidentPersonInput) => request<unknown>(`${ops}/incidents/${incidentId}/people/${personId}`, send('PUT', input), token),
   upsertIncidentVehicle: (token: string, incidentId: string, vehicleId: string, input: UpsertIncidentVehicleInput) => request<unknown>(`${ops}/incidents/${incidentId}/vehicles/${vehicleId}`, send('PUT', input), token),
   upsertIncidentStatement: (token: string, incidentId: string, statementId: string, input: UpsertIncidentStatementInput) => request<unknown>(`${ops}/incidents/${incidentId}/statements/${statementId}`, send('PUT', input), token),

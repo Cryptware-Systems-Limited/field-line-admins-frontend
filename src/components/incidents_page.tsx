@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ChevronRight, Clipboard, LoaderCircle, Search } from 'lucide-react';
+import { ChevronRight, Clipboard, LoaderCircle, Plus, Search } from 'lucide-react';
 
 import { api } from '../api';
 import type { Incident } from '../types';
 import { getError } from '../utils/errors';
 import { formatDateTime, humanize, incidentRef, incidentStatusClass, incidentStatusOptions, incidentTitle, personnelName, priorityClass } from '../utils/incident_options';
+import { IncidentCreateWizard } from './incidents/incident_create_wizard';
 
 export function IncidentsPage({ token, onOpen }: { token: string; onOpen: (incidentId: string) => void }) {
   const [incidents, setIncidents] = useState<Incident[]>([]);
@@ -12,6 +13,7 @@ export function IncidentsPage({ token, onOpen }: { token: string; onOpen: (incid
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('');
+  const [creating, setCreating] = useState(false);
 
   useEffect(() => {
     void api
@@ -38,6 +40,9 @@ export function IncidentsPage({ token, onOpen }: { token: string; onOpen: (incid
           <p>Reports received by your station. Select one to review and update it.</p>
         </div>
         <div className="ops-actions">
+          <button className="button button--primary" onClick={() => setCreating(true)}>
+            <Plus size={17} /> Create incident
+          </button>
           <label className="search">
             <Search size={18} />
             <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search incidents" />
@@ -129,6 +134,17 @@ export function IncidentsPage({ token, onOpen }: { token: string; onOpen: (incid
             </tbody>
           </table>
         </div>
+      )}
+
+      {creating && (
+        <IncidentCreateWizard
+          token={token}
+          onClose={() => setCreating(false)}
+          onCreated={(incidentId) => {
+            setCreating(false);
+            onOpen(incidentId);
+          }}
+        />
       )}
     </section>
   );

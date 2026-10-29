@@ -13,14 +13,14 @@ export function humanize(value?: string | null) {
 
 const options = (...values: string[]): Option[] => values.map((value) => ({ value, label: humanize(value) }));
 
-export const incidentTypeOptions = options('THEFT', 'ROBBERY', 'ASSAULT', 'BURGLARY', 'FRAUD', 'DOMESTIC_VIOLENCE', 'KIDNAPPING', 'MISSING_PERSON', 'ROAD_ACCIDENT', 'VANDALISM', 'OTHER');
-export const priorityOptions = options('LOW', 'MEDIUM', 'HIGH', 'URGENT');
+export const incidentTypeOptions = options('THEFT', 'ASSAULT', 'MISSING_PERSON', 'ROAD_ACCIDENT', 'BURGLARY', 'OTHER');
+export const priorityOptions = options('EMERGENCY', 'URGENT', 'ROUTINE');
 export const incidentStatusOptions = options('OPEN', 'UNDER_REVIEW', 'ASSIGNED', 'IN_PROGRESS', 'RESOLVED', 'CLOSED');
-export const personRoleOptions = options('VICTIM', 'WITNESS', 'COMPLAINANT', 'SUSPECT', 'INFORMANT', 'OTHER');
+export const personRoleOptions = options('VICTIM', 'WITNESS', 'SUSPECT', 'INFORMANT', 'OTHER');
 export const idTypeOptions = options('NIN', 'VOTERS_CARD', 'DRIVERS_LICENCE', 'INTERNATIONAL_PASSPORT', 'OTHER');
 export const vehicleTypeOptions = options('CAR', 'MOTORCYCLE', 'TRICYCLE', 'BUS', 'TRUCK', 'OTHER');
-export const vehicleRoleOptions = options('INVOLVED', 'USED_BY_SUSPECT', 'VICTIM_VEHICLE', 'WITNESS_VEHICLE', 'STOLEN', 'OTHER');
-export const driverOwnerStatusOptions = options('UNKNOWN', 'OWNER', 'SUSPECT', 'VICTIM', 'WITNESS');
+export const vehicleRoleOptions = options('INVOLVED', 'USED_BY_SUSPECT', 'SUSPECT_VEHICLE', 'VICTIM_VEHICLE', 'WITNESS_VEHICLE', 'OTHER');
+export const driverOwnerStatusOptions = options('KNOWN', 'UNKNOWN', 'SUSPECT', 'VICTIM', 'WITNESS', 'OTHER');
 export const statementMethodOptions = options('TYPED', 'DICTATED', 'AUDIO');
 export const evidenceTypeOptions = options('PHOTO', 'VIDEO', 'AUDIO', 'DOCUMENT');
 export const suspectStatusOptions = options('SUSPECT', 'WANTED', 'ARRESTED', 'RELEASED');
@@ -42,7 +42,7 @@ export function incidentStatusClass(status?: string | null) {
 export function priorityClass(priority?: string | null) {
   switch (priority) {
     case 'URGENT':
-    case 'HIGH':
+    case 'EMERGENCY':
       return 'status status--suspended';
     case 'MEDIUM':
       return 'status status--pending_approval';

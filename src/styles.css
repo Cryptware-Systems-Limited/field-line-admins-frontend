@@ -1379,6 +1379,168 @@ tbody tr:hover {
   font: inherit;
 }
 
+.incident-wizard {
+  width: min(900px, 100%);
+}
+
+.wizard-progress {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  padding: 20px 25px 4px;
+}
+
+.wizard-step {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #8b9aa6;
+}
+
+.wizard-step::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  border-radius: 999px;
+  background: #dfe7ed;
+}
+
+.wizard-step--active {
+  color: #0b5d8f;
+}
+
+.wizard-step--active::before {
+  background: #0b5d8f;
+}
+
+.wizard-step span {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  border-radius: 50%;
+  background: #e8eef3;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.wizard-step--active span {
+  color: white;
+  background: #0b5d8f;
+}
+
+.wizard-step small {
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.section-heading-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 6px;
+}
+
+.section-heading-row .button {
+  flex: 0 0 auto;
+}
+
+.compact-grid {
+  padding-top: 8px;
+}
+
+.add-draft-button {
+  margin: 4px 0 16px;
+}
+
+.draft-list {
+  display: grid;
+  gap: 8px;
+  margin: 14px 0;
+}
+
+.draft-list > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid #e1e9ef;
+  border-radius: 9px;
+  background: #f8fbfd;
+}
+
+.draft-list strong,
+.draft-list small {
+  display: block;
+}
+
+.draft-list strong {
+  font-size: 12px;
+}
+
+.draft-list small {
+  margin-top: 3px;
+  color: #7b8b97;
+  font-size: 10px;
+}
+
+.review-list {
+  margin: 16px 0;
+}
+
+.review-list > div {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid #e6edf2;
+}
+
+.review-list dt {
+  color: #7b8b97;
+  font-size: 11px;
+}
+
+.review-list dd {
+  margin: 0;
+  color: #183147;
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+@media (max-width: 600px) {
+  .wizard-progress {
+    padding: 18px 14px 4px;
+  }
+
+  .wizard-step {
+    display: block;
+  }
+
+  .wizard-step small {
+    display: none;
+  }
+
+  .section-heading-row {
+    flex-direction: column;
+  }
+
+  .section-heading-row .button {
+    width: 100%;
+  }
+
+  .review-list > div {
+    grid-template-columns: 90px 1fr;
+  }
+}
+
 .ops-detail-header {
   display: flex;
   flex-wrap: wrap;

@@ -1,9 +1,10 @@
 import { ReactNode, useEffect, useState } from 'react';
-import { Activity, ArrowRight, Building2, Clipboard, LayoutDashboard, LoaderCircle, UsersRound, UserX } from 'lucide-react';
+import { Activity, ArrowRight, Building2, Clipboard, LayoutDashboard, LoaderCircle, Plus, UsersRound, UserX } from 'lucide-react';
 
 import { api } from '../api';
 import { Brand } from '../components/brands';
 import { IncidentDetail } from '../components/incident_detail';
+import { IncidentCreateWizard } from '../components/incidents/incident_create_wizard';
 import { IncidentsPage } from '../components/incidents_page';
 import { SidebarUser } from '../components/sidebar_user';
 import { StatCard } from '../components/stat_cards';
@@ -41,6 +42,7 @@ function NavLink({ active, onSelect, children }: { active: boolean; onSelect: ()
 export function StationOperationsDashboard({ token, user, onLogout }: { token: string; user: AdminUser; onLogout: () => void }) {
   const [view, setView] = useState<View>('overview');
   const [openIncidentId, setOpenIncidentId] = useState<string | null>(null);
+  const [creatingIncident, setCreatingIncident] = useState(false);
   const [overview, setOverview] = useState<StationOperationsDashboardResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -96,6 +98,9 @@ export function StationOperationsDashboard({ token, user, onLogout }: { token: s
             <span className="eyebrow">{overview ? overview.station.name : 'Station operations'}</span>
             <h1>{view === 'overview' ? `Welcome, ${displayName}` : titles[view]}</h1>
           </div>
+          <button className="button button--primary" onClick={() => setCreatingIncident(true)}>
+            <Plus size={18} /> Create incident
+          </button>
         </header>
 
         {view === 'incidents' &&
@@ -151,6 +156,17 @@ export function StationOperationsDashboard({ token, user, onLogout }: { token: s
             )
           ))}
       </main>
+      {creatingIncident && (
+        <IncidentCreateWizard
+          token={token}
+          onClose={() => setCreatingIncident(false)}
+          onCreated={(incidentId) => {
+            setCreatingIncident(false);
+            setView('incidents');
+            setOpenIncidentId(incidentId);
+          }}
+        />
+      )}
     </div>
   );
 }
