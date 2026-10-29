@@ -1,5 +1,5 @@
 import { FormEvent, useState } from 'react';
-import { ArrowLeft, ArrowRight, Check, Crosshair, LoaderCircle, Plus, Trash2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Crosshair, LoaderCircle, Pencil, Plus, Trash2 } from 'lucide-react';
 
 import { api } from '../../api';
 import type { UpdateIncidentInput, UpsertIncidentPersonInput, UpsertIncidentVehicleInput } from '../../types';
@@ -51,6 +51,7 @@ function clean<T extends Record<string, unknown>>(value: T): T {
 
 export function IncidentCreateWizard({ token, onClose, onCreated }: Props) {
   const [step, setStep] = useState(0);
+  const [furthestStep, setFurthestStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [locating, setLocating] = useState(false);
   const [error, setError] = useState('');
@@ -108,7 +109,10 @@ export function IncidentCreateWizard({ token, onClose, onCreated }: Props) {
           ...current,
           latitude: coords.latitude.toFixed(6),
           longitude: coords.longitude.toFixed(6),
-          accuracyMeters: Math.round(coords.accuracy).toString(),
+          accuracyMeters:
+            Number.isFinite(coords.accuracy) && coords.accuracy <= 10_000
+              ? Math.round(coords.accuracy).toString()
+              : '',
         }));
         setLocating(false);
       },
@@ -120,8 +124,8 @@ export function IncidentCreateWizard({ token, onClose, onCreated }: Props) {
     );
   }
 
-  function validateCurrentStep() {
-    if (step === 0) {
+  function validateStep(stepToValidate: number) {
+    if (stepToValidate === 0) {
       if (!form.type || !form.priority || !form.occurredAt || form.description.trim().length < 3) {
         return 'Complete the incident type, priority, date/time, and description.';
       }
@@ -129,25 +133,47 @@ export function IncidentCreateWizard({ token, onClose, onCreated }: Props) {
         return 'Describe the custom incident type.';
       }
     }
-    if (step === 1) {
+    if (stepToValidate === 1) {
       const latitude = Number(form.latitude);
       const longitude = Number(form.longitude);
+      const accuracyMeters = form.accuracyMeters === '' ? null : Number(form.accuracyMeters);
       if (!Number.isFinite(latitude) || latitude < -90 || latitude > 90) return 'Enter a valid latitude between -90 and 90.';
       if (!Number.isFinite(longitude) || longitude < -180 || longitude > 180) return 'Enter a valid longitude between -180 and 180.';
+      if (accuracyMeters !== null && (!Number.isFinite(accuracyMeters) || accuracyMeters < 0 || accuracyMeters > 10_000)) {
+        return 'Location accuracy must be between 0 and 10,000 metres, or left blank.';
+      }
     }
     return '';
   }
 
+  function goToStep(nextStep: number) {
+    if (loading || nextStep > furthestStep) return;
+    if (nextStep > step) {
+      const validationError = validateStep(step);
+      if (validationError) {
+        setError(validationError);
+        return;
+      }
+    }
+    setError('');
+    setStep(nextStep);
+  }
+
   async function submit(event: FormEvent) {
     event.preventDefault();
-    const validationError = validateCurrentStep();
+    const validationError =
+      step === steps.length - 1
+        ? validateStep(0) || validateStep(1)
+        : validateStep(step);
     if (validationError) {
       setError(validationError);
       return;
     }
     if (step < steps.length - 1) {
       setError('');
-      setStep((current) => current + 1);
+      const nextStep = step + 1;
+      setFurthestStep((current) => Math.max(current, nextStep));
+      setStep(nextStep);
       return;
     }
 
@@ -169,7 +195,9 @@ export function IncidentCreateWizard({ token, onClose, onCreated }: Props) {
         location: {
           latitude,
           longitude,
-          ...(Number.isFinite(accuracyMeters) && accuracyMeters >= 0 ? { accuracyMeters } : {}),
+          ...(form.accuracyMeters !== '' && Number.isFinite(accuracyMeters) && accuracyMeters >= 0 && accuracyMeters <= 10_000
+            ? { accuracyMeters }
+            : {}),
           capturedAt: new Date().toISOString(),
           ...(form.resolvedAddress.trim() ? { resolvedAddress: form.resolvedAddress.trim() } : {}),
           ...(form.landmarkOrDirections.trim()
@@ -202,10 +230,17 @@ export function IncidentCreateWizard({ token, onClose, onCreated }: Props) {
         <ModalHeader eyebrow="Station incident desk" title="Create incident" onClose={onClose} />
         <div className="wizard-progress" aria-label={`Step ${step + 1} of ${steps.length}`}>
           {steps.map((label, index) => (
-            <div key={label} className={index <= step ? 'wizard-step wizard-step--active' : 'wizard-step'}>
+            <button
+              type="button"
+              key={label}
+              className={`${index <= furthestStep ? 'wizard-step wizard-step--available' : 'wizard-step'}${index === step ? ' wizard-step--active' : ''}`}
+              onClick={() => goToStep(index)}
+              disabled={index > furthestStep || loading}
+              aria-current={index === step ? 'step' : undefined}
+            >
               <span>{index + 1}</span>
               <small>{label}</small>
-            </div>
+            </button>
           ))}
         </div>
 
@@ -243,7 +278,7 @@ export function IncidentCreateWizard({ token, onClose, onCreated }: Props) {
               <div className="form-grid">
                 <TextField label="Latitude" inputMode="decimal" value={form.latitude} onChange={set('latitude')} placeholder="6.601820" required />
                 <TextField label="Longitude" inputMode="decimal" value={form.longitude} onChange={set('longitude')} placeholder="3.351510" required />
-                <TextField label="Accuracy in metres (optional)" inputMode="decimal" value={form.accuracyMeters} onChange={set('accuracyMeters')} placeholder="8" />
+                <TextField type="number" min={0} max={10000} label="Accuracy in metres (optional)" inputMode="decimal" value={form.accuracyMeters} onChange={set('accuracyMeters')} placeholder="8" />
                 <span />
                 <TextField className="span-2" label="Address" value={form.resolvedAddress} onChange={set('resolvedAddress')} maxLength={500} placeholder="Street, area, city" />
                 <TextField className="span-2" label="Landmark or directions" value={form.landmarkOrDirections} onChange={set('landmarkOrDirections')} maxLength={500} placeholder="Opposite the filling station" />
@@ -306,13 +341,13 @@ export function IncidentCreateWizard({ token, onClose, onCreated }: Props) {
               <h3>Review before saving</h3>
               <p className="muted small-copy">Saving opens a case automatically and creates the official station reference.</p>
               <dl className="review-list">
-                <div><dt>Type</dt><dd>{form.type === 'OTHER' ? form.otherTypeDescription : humanize(form.type)}</dd></div>
-                <div><dt>Priority</dt><dd>{humanize(form.priority)}</dd></div>
-                <div><dt>Occurred</dt><dd>{new Date(fromDateTimeLocal(form.occurredAt)).toLocaleString('en-NG')}</dd></div>
-                <div><dt>Location</dt><dd>{form.resolvedAddress || `${form.latitude}, ${form.longitude}`}</dd></div>
-                <div><dt>Description</dt><dd>{form.description}</dd></div>
-                <div><dt>People</dt><dd>{people.length || 'None added'}</dd></div>
-                <div><dt>Vehicles</dt><dd>{vehicles.length || 'None added'}</dd></div>
+                <div><dt>Type</dt><dd>{form.type === 'OTHER' ? form.otherTypeDescription : humanize(form.type)}</dd><button type="button" onClick={() => goToStep(0)} aria-label="Edit incident type"><Pencil size={15} /> Edit</button></div>
+                <div><dt>Priority</dt><dd>{humanize(form.priority)}</dd><button type="button" onClick={() => goToStep(0)} aria-label="Edit priority"><Pencil size={15} /> Edit</button></div>
+                <div><dt>Occurred</dt><dd>{new Date(fromDateTimeLocal(form.occurredAt)).toLocaleString('en-NG')}</dd><button type="button" onClick={() => goToStep(0)} aria-label="Edit incident date and time"><Pencil size={15} /> Edit</button></div>
+                <div><dt>Location</dt><dd>{form.resolvedAddress || `${form.latitude}, ${form.longitude}`}</dd><button type="button" onClick={() => goToStep(1)} aria-label="Edit location"><Pencil size={15} /> Edit</button></div>
+                <div><dt>Description</dt><dd>{form.description}</dd><button type="button" onClick={() => goToStep(0)} aria-label="Edit description"><Pencil size={15} /> Edit</button></div>
+                <div><dt>People</dt><dd>{people.length || 'None added'}</dd><button type="button" onClick={() => goToStep(2)} aria-label="Edit people"><Pencil size={15} /> Edit</button></div>
+                <div><dt>Vehicles</dt><dd>{vehicles.length || 'None added'}</dd><button type="button" onClick={() => goToStep(2)} aria-label="Edit vehicles"><Pencil size={15} /> Edit</button></div>
               </dl>
             </div>
           )}
